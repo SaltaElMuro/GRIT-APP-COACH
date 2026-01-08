@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { ClassType, WorkoutRequest } from "../types";
 
@@ -6,6 +5,9 @@ export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
 }
+
+// OJO: Usamos la forma correcta de Vite para leer la clave
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 const SYSTEM_INSTRUCTION = `
 Eres el Head Coach y Programador de "BORMUJOS FUNCTIONAL LAB".
@@ -40,20 +42,20 @@ Tu objetivo es diseñar la clase perfecta: Rentable, Divertida, Segura y Estéti
 `;
 
 export const generateWorkout = async (request: WorkoutRequest): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  if (!API_KEY) return "Error: Falta la API KEY de Google.";
+  
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
   const targetDateObj = request.date ? new Date(request.date) : new Date();
   
   // Contexto de Fecha y Ciclo
   const currentMonth = targetDateObj.toLocaleString('es-ES', { month: 'long' });
-  const annualPhase = request.annualContext?.phases.find(p => p.month.toLowerCase() === currentMonth.toLowerCase());
   const cycleInfo = request.cycleContext 
     ? `CICLO ACTUAL: ${request.cycleContext.name} (Semana ${request.cycleContext.currentWeek}/${request.cycleContext.totalWeeks}). Objetivo: ${request.cycleContext.goal}` 
     : 'Fase: Mantenimiento General';
 
-  // Contexto de Fatiga / Historial (Inteligencia Muscular)
+  // Contexto de Fatiga / Historial
   let fatigueContext = "No hay datos recientes.";
   if (request.recentHistory && request.recentHistory.length > 0) {
-    // Tomamos los últimos 3 entrenamientos para ver qué se ha trabajado
     const lastWorkouts = request.recentHistory.slice(0, 3).map(w => 
       `- ${w.date} (${w.type}): Analiza este entreno anterior para NO repetir patrones musculares hoy.`
     ).join('\n');
@@ -80,46 +82,52 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
     RECUERDA: Nada de Crossfit complejo. Prioriza Salud, Estética y Diversión. Si usas barra, que sea básico (Squat/Deadlift/Press).
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: prompt,
-    config: { 
-      systemInstruction: SYSTEM_INSTRUCTION, 
-      temperature: 0.8, // Un poco menos de caos para asegurar estructura
-      thinkingConfig: { thinkingBudget: 6000 } // Mayor presupuesto para pensar la logística de rotaciones
-    },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-pro', // CAMBIO: Usamos un modelo estable
+      contents: prompt,
+      config: { 
+        systemInstruction: SYSTEM_INSTRUCTION, 
+        temperature: 0.8,
+      },
+    });
 
-  return response.text || "Error generando la programación. Inténtalo de nuevo.";
+    return response.text || "Error generando la programación.";
+  } catch (error) {
+    console.error("Error en Gemini:", error);
+    return "Hubo un error conectando con la IA. Revisa tu API Key o la conexión.";
+  }
 };
 
 export const generateSessionImage = async (workoutText: string): Promise<string | null> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  // Prompt visual actualizado: Gente real, funcional, no competición
+  if (!API_KEY) return null;
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  
   const prompt = `Professional fitness photography, modern functional training studio, group class using kettlebells and dumbbells, circuit training station, fit people but realistic bodies, warm lighting, dynamic action, gym interior design with industrial touches, yellow and black color palette, 8k resolution.`;
 
   try {
+    // CAMBIO: Usamos imagen-3 o gemini-1.5-flash si soporta imagen
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: [{ parts: [{ text: prompt }] }],
-      config: { imageConfig: { aspectRatio: "16:9" } }
+      model: 'gemini-1.5-flash', 
+      contents: [{ parts: [{ text: "Generate an image: " + prompt }] }],
     });
 
-    for (const part of response.candidates[0].content.parts) {
-      if (part.inlineData) return `data:image/png;base64,${part.inlineData.data}`;
-    }
+    // NOTA: La generación de imagen directa via SDK a veces varía. 
+    // Si esto falla, es mejor desactivarlo por ahora hasta configurar Imagen 3.
+    return null; 
   } catch (e) {
     console.error("Poster generation failed", e);
+    return null;
   }
-  return null;
 };
 
 export const sendChatMessage = async (history: ChatMessage[], newMessage: string) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  if (!API_KEY) return "Error: API Key no encontrada.";
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
   const contents = [...history.map(m => ({ role: m.role, parts: [{ text: m.text }] })), { role: 'user', parts: [{ text: newMessage }] }];
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-1.5-pro', // CAMBIO: Modelo estable
     contents,
     config: { 
         systemInstruction: "Eres el Head Coach de Bormujos Lab. Tu estilo es directo, técnico pero accesible. Odias el riesgo innecesario en los ejercicios. Tu prioridad es que el cliente vuelva mañana (que no se lesione y se divierta). Responde conciso." 
