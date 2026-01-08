@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
-/* VERSIÓN COMPATIBLE: GEMINI-PRO
-   Mantiene toda tu lógica de negocio (Anti-CrossFit, etc.) 
-   pero usa el modelo estándar para evitar el error 404.
+/* CÓDIGO FINAL - MODELO FLASH (NUEVA LLAVE)
+   Este código usa gemini-1.5-flash, que funcionará perfecto
+   con tu nueva llave limpia. Es la versión más rápida.
 */
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ClassType, WorkoutRequest } from "../types";
@@ -51,8 +51,8 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
   
   const genAI = new GoogleGenerativeAI(API_KEY);
   
-  // CAMBIO CLAVE: Usamos 'gemini-pro' para arreglar el Error 404
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  // CAMBIO FINAL: Con la llave nueva, usamos FLASH (Mejor y más rápido)
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const targetDateObj = request.date ? new Date(request.date) : new Date();
   
@@ -74,7 +74,7 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
   // Contexto de Material
   const equipStr = request.equipmentContext?.map(e => `${e.name} (${e.quantity} uds)`).join(', ') || 'Material Estándar';
 
-  // INYECTAMOS TU SISTEMA DENTRO DEL PROMPT (Más seguro para gemini-pro)
+  // INYECTAMOS TU SISTEMA DENTRO DEL PROMPT
   const prompt = `
     INSTRUCCIONES DEL SISTEMA (TU ROL):
     ${SYSTEM_INSTRUCTION}
@@ -108,7 +108,6 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
 };
 
 export const generateSessionImage = async (workoutText: string): Promise<string | null> => {
-  // Desactivamos imagen para asegurar estabilidad inicial
   return null;
 };
 
@@ -116,8 +115,8 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
   if (!API_KEY) return "Error: API Key no encontrada.";
   
   const genAI = new GoogleGenerativeAI(API_KEY);
-  // Usamos también gemini-pro aquí
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  // Usamos también FLASH aquí
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   
   const chat = model.startChat({
     history: history.map(m => ({
@@ -127,7 +126,6 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
   });
 
   try {
-    // Recordatorio de rol en cada mensaje
     const messageWithContext = `(Rol: Head Coach Bormujos Lab) ${newMessage}`;
     const result = await chat.sendMessage(messageWithContext);
     const response = await result.response;
