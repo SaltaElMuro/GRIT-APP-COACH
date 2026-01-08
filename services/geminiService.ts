@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
-/* ESTE ES TU CÓDIGO ORIGINAL COMPLETO (Anti-CrossFit, Regla del 12, etc.)
-   Solo he ajustado la conexión técnica para que funcione en Vercel.
+/* VERSIÓN COMPATIBLE: GEMINI-PRO
+   Mantiene toda tu lógica de negocio (Anti-CrossFit, etc.) 
+   pero usa el modelo estándar para evitar el error 404.
 */
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ClassType, WorkoutRequest } from "../types";
@@ -10,9 +11,9 @@ export interface ChatMessage {
   text: string;
 }
 
-// 1. AJUSTE TÉCNICO: La forma correcta de leer la clave en Vite
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
+// --- TU LÓGICA ORIGINAL ---
 const SYSTEM_INSTRUCTION = `
 Eres el Head Coach y Programador de "BORMUJOS FUNCTIONAL LAB".
 Tu objetivo es diseñar la clase perfecta: Rentable, Divertida, Segura y Estética.
@@ -46,17 +47,12 @@ Tu objetivo es diseñar la clase perfecta: Rentable, Divertida, Segura y Estéti
 `;
 
 export const generateWorkout = async (request: WorkoutRequest): Promise<string> => {
-  if (!API_KEY) return "Error: Falta la API KEY de Google. Revisa la configuración en Vercel.";
+  if (!API_KEY) return "Error: Falta la API KEY de Google. Revisa Vercel.";
   
-  // Inicializamos la IA
   const genAI = new GoogleGenerativeAI(API_KEY);
   
-  // 2. AJUSTE TÉCNICO: Usamos el modelo estable 'gemini-1.5-flash' 
-  // que es rápido y entiende perfectamente instrucciones complejas.
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    systemInstruction: SYSTEM_INSTRUCTION
-  });
+  // CAMBIO CLAVE: Usamos 'gemini-pro' para arreglar el Error 404
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
   const targetDateObj = request.date ? new Date(request.date) : new Date();
   
@@ -66,7 +62,7 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
     ? `CICLO ACTUAL: ${request.cycleContext.name} (Semana ${request.cycleContext.currentWeek}/${request.cycleContext.totalWeeks}). Objetivo: ${request.cycleContext.goal}` 
     : 'Fase: Mantenimiento General';
 
-  // Contexto de Fatiga / Historial (Inteligencia Muscular)
+  // Contexto de Fatiga / Historial
   let fatigueContext = "No hay datos recientes.";
   if (request.recentHistory && request.recentHistory.length > 0) {
     const lastWorkouts = request.recentHistory.slice(0, 3).map(w => 
@@ -78,8 +74,14 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
   // Contexto de Material
   const equipStr = request.equipmentContext?.map(e => `${e.name} (${e.quantity} uds)`).join(', ') || 'Material Estándar';
 
+  // INYECTAMOS TU SISTEMA DENTRO DEL PROMPT (Más seguro para gemini-pro)
   const prompt = `
-    PROGRAMA EL ENTRENAMIENTO PARA: ${targetDateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
+    INSTRUCCIONES DEL SISTEMA (TU ROL):
+    ${SYSTEM_INSTRUCTION}
+
+    ---------------------------------------------------
+    
+    TAREA: PROGRAMA EL ENTRENAMIENTO PARA: ${targetDateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()}
     TIPO DE CLASE: ${request.type}
     
     INSTRUCCIONES CLAVE DE HOY:
@@ -106,7 +108,7 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
 };
 
 export const generateSessionImage = async (workoutText: string): Promise<string | null> => {
-  // Desactivamos temporalmente la imagen para asegurar que el texto carga primero
+  // Desactivamos imagen para asegurar estabilidad inicial
   return null;
 };
 
@@ -114,10 +116,8 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
   if (!API_KEY) return "Error: API Key no encontrada.";
   
   const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: "Eres el Head Coach de Bormujos Lab. Tu estilo es directo, técnico pero accesible. Odias el riesgo innecesario en los ejercicios." 
-  });
+  // Usamos también gemini-pro aquí
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
   
   const chat = model.startChat({
     history: history.map(m => ({
@@ -127,7 +127,9 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
   });
 
   try {
-    const result = await chat.sendMessage(newMessage);
+    // Recordatorio de rol en cada mensaje
+    const messageWithContext = `(Rol: Head Coach Bormujos Lab) ${newMessage}`;
+    const result = await chat.sendMessage(messageWithContext);
     const response = await result.response;
     return response.text();
   } catch (error) {
