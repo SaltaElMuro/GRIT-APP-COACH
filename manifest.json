@@ -1,0 +1,18 @@
+
+{
+  "short_name": "Lab Coach",
+  "name": "Bormujos Lab - Coach OS",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2936/2936886.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#121212",
+  "background_color": "#121212",
+  "orientation": "portrait"
+}

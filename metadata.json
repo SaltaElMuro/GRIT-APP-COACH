@@ -1,0 +1,11 @@
+{
+  "name": "Bormujos Lab - Coach OS",
+  "short_name": "Lab Coach",
+  "description": "Sistema operativo de programación para Bormujos Functional Lab. Gestión de WODs, inventario y planificación anual.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#FFD700"
+}
