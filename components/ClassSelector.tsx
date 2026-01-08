@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { ClassType, WorkoutRequest } from '../types';
-import { BicepsFlexed, Mountain, Timer, Leaf, Sparkles, Loader2, Info, Calendar } from 'lucide-react';
+import { Dumbbell, Mountain, Timer, Leaf, Sparkles, Loader2, Info, Calendar } from 'lucide-react';
 
 interface ClassSelectorProps {
   onGenerate: (request: WorkoutRequest) => void;
@@ -29,7 +28,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({ onGenerate, isLoad
     {
       type: ClassType.HYBRID,
       title: 'Functional Hybrid',
-      icon: <BicepsFlexed className="w-6 h-6" />,
+      icon: <Dumbbell className="w-6 h-6" />,
       desc: 'Fuerza + Metabólico. Estructura clásica.',
       color: 'border-blue-500/50 hover:border-blue-500'
     },
@@ -97,11 +96,11 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({ onGenerate, isLoad
             </label>
            </div>
            <input 
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-brand-black border border-brand-gray rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-yellow transition-colors [color-scheme:dark]"
-              disabled={isLoading}
+             type="date"
+             value={selectedDate}
+             onChange={(e) => setSelectedDate(e.target.value)}
+             className="w-full bg-brand-black border border-brand-gray rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-yellow transition-colors [color-scheme:dark]"
+             disabled={isLoading}
            />
         </div>
 
