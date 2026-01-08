@@ -85,7 +85,7 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-pro', // CAMBIO: Usamos un modelo estable
+      model: 'gemini-1.5-flash', // <--- CAMBIO CLAVE AQUÍ (Antes era Pro)
       contents: prompt,
       config: { 
         systemInstruction: SYSTEM_INSTRUCTION, 
@@ -107,14 +107,10 @@ export const generateSessionImage = async (workoutText: string): Promise<string 
   const prompt = `Professional fitness photography, modern functional training studio, group class using kettlebells and dumbbells, circuit training station, fit people but realistic bodies, warm lighting, dynamic action, gym interior design with industrial touches, yellow and black color palette, 8k resolution.`;
 
   try {
-    // CAMBIO: Usamos imagen-3 o gemini-1.5-flash si soporta imagen
     const response = await ai.models.generateContent({
       model: 'gemini-1.5-flash', 
       contents: [{ parts: [{ text: "Generate an image: " + prompt }] }],
     });
-
-    // NOTA: La generación de imagen directa via SDK a veces varía. 
-    // Si esto falla, es mejor desactivarlo por ahora hasta configurar Imagen 3.
     return null; 
   } catch (e) {
     console.error("Poster generation failed", e);
@@ -128,7 +124,7 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
   const contents = [...history.map(m => ({ role: m.role, parts: [{ text: m.text }] })), { role: 'user', parts: [{ text: newMessage }] }];
   
   const response = await ai.models.generateContent({
-    model: 'gemini-1.5-pro', // CAMBIO: Modelo estable
+    model: 'gemini-1.5-flash', // <--- CAMBIO CLAVE AQUÍ TAMBIÉN (Antes era Pro)
     contents,
     config: { 
         systemInstruction: "Eres el Head Coach de Bormujos Lab. Tu estilo es directo, técnico pero accesible. Odias el riesgo innecesario en los ejercicios. Tu prioridad es que el cliente vuelva mañana (que no se lesione y se divierta). Responde conciso." 
