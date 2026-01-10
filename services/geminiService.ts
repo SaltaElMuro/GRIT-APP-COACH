@@ -52,8 +52,7 @@ export const generateWorkout = async (request: WorkoutRequest): Promise<string> 
   const genAI = new GoogleGenerativeAI(API_KEY);
   
   // CAMBIO FINAL: Con la llave nueva, usamos FLASH (Mejor y más rápido)
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
   const targetDateObj = request.date ? new Date(request.date) : new Date();
   
   // Contexto de Fecha y Ciclo
@@ -116,8 +115,7 @@ export const sendChatMessage = async (history: ChatMessage[], newMessage: string
   
   const genAI = new GoogleGenerativeAI(API_KEY);
   // Usamos también FLASH aquí
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });  
   const chat = model.startChat({
     history: history.map(m => ({
       role: m.role,
